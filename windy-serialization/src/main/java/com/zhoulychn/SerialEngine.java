@@ -1,4 +1,4 @@
-package com.zhoulychn.engine;
+package com.zhoulychn;
 
 import com.zhoulychn.serializer.KryoSerializer;
 import com.zhoulychn.serializer.SerializerType;

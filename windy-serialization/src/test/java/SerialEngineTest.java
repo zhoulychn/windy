@@ -1,4 +1,4 @@
-import com.zhoulychn.engine.SerialEngine;
+import com.zhoulychn.SerialEngine;
 import com.zhoulychn.serializer.SerializerType;
 import com.zhoulychn.serializer.Serializer;
 import org.junit.Test;
