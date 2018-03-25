@@ -4,8 +4,10 @@ import com.google.common.collect.Maps;
 import com.zhoulychn.serializer.ZkSerializerAdapter;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +28,13 @@ public class RegisterCenter {
 
     private static int ZK_CONNECTION_TIME_OUT;
 
-    private static String ZK_REGISTRY_PATH;
+    private static String ZK_APP_PATH;
 
-    private static final Map<String, List<ProviderService>> services = Maps.newConcurrentMap();
+    private static final Map<String, Map<String, Method>> services = Maps.newConcurrentMap();
 
-    private static ExecutorService executor = Executors.newFixedThreadPool(15);
+    private static ZkClient client;
 
-    private static ZkClient client = new ZkClient(ZK_REGISTRY_PATH, ZK_SESSION_TIMEOUT, ZK_CONNECTION_TIME_OUT, new ZkSerializerAdapter());
-    ;
+    private static RegisterCenter singleton = new RegisterCenter();
 
     static {
         Properties properties = new Properties();
@@ -45,39 +46,54 @@ public class RegisterCenter {
         }
         ZK_SESSION_TIMEOUT = (int) properties.get("ZK_SESSION_TIMEOUT");
         ZK_CONNECTION_TIME_OUT = (int) properties.get("ZK_CONNECTION_TIME_OUT");
-        ZK_REGISTRY_PATH = properties.getProperty("ZK_REGISTRY_PATH");
+        ZK_APP_PATH = properties.getProperty("ZK_APP_PATH");
+        client = new ZkClient(ZK_APP_PATH, ZK_SESSION_TIMEOUT, ZK_CONNECTION_TIME_OUT, new ZkSerializerAdapter());
     }
 
-    public void registerProvider(ConcurrentLinkedQueue<ProviderService> queue) {
-        while (queue.size() != 0) {
-            Future<?> future = executor.submit(() -> {
-                ProviderService each = queue.poll();
-                client.writeData(ZK_REGISTRY_PATH + "/" + each.getName(), each.getClazz());
-            });
+    private RegisterCenter() {
+
+    }
+
+    public static RegisterCenter getSingleton() {
+        return singleton;
+    }
+
+
+    public void registerProvider(List<Class> list) {
+        for (Class each : list) {
+            client.createPersistent(ZK_APP_PATH + "/" + each.getName(), true);
+            for (Method method : each.getDeclaredMethods()) {
+                client.createPersistent(ZK_APP_PATH + "/" + each.getName() + "/" + method.toString(), method);
+            }
         }
     }
 
-    public void getProvider(String name) {
-        List<ProviderService> services = RegisterCenter.services.get(ZK_REGISTRY_PATH + name);
+    public Method getProvider(String serviceName, String methodName) {
+        Method method = services.get(serviceName).get(methodName);
+        if (method == null) {
+            method = client.readData(ZK_APP_PATH + "/" + serviceName + "/" + methodName, true);
+        }
+        return method;
     }
 
     private void RegisterCenterInit() {
-        if (!client.exists(ZK_REGISTRY_PATH)) {
-            client.createPersistent(ZK_REGISTRY_PATH, true);
+
+        //初始化路径
+        if (!client.exists(ZK_APP_PATH)) {
+            client.createPersistent(ZK_APP_PATH, true);
         }
 
-        client.subscribeChildChanges(ZK_REGISTRY_PATH, (parentPath, currentChilds) -> {
+        //监听结点改变，将新增的服务加入缓存
+        client.subscribeChildChanges(ZK_APP_PATH, (parentPath, currentChilds) -> {
             if (currentChilds == null || currentChilds.size() == 0) return;
             for (String each : currentChilds) {
-                Object obj = client.readData(ZK_REGISTRY_PATH + "/" + each, true);
+                Object obj = client.readData(parentPath + "/" + each, true);
 
-                if (obj instanceof ProviderService) {
-                    services.computeIfAbsent(ZK_REGISTRY_PATH, k -> new ArrayList<>());
-                    services.get(ZK_REGISTRY_PATH).add((ProviderService) obj);
+                if (obj instanceof Method) {
+                    services.computeIfAbsent(ZK_APP_PATH, k -> Maps.newConcurrentMap());
+                    services.get(((Method) obj).getDeclaringClass().getName()).put(obj.toString(), (Method) obj);
                 }
             }
         });
     }
-
-
 }

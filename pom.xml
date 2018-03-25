@@ -46,7 +46,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.24.Final</version>
+            <version>4.1.8.Final</version>
         </dependency>
 
         <!-- Protostuff -->
@@ -126,8 +126,9 @@
         <module>windy-server</module>
         <module>windy-registry</module>
         <module>windy-transport</module>
-        <module>windy-serialization</module>
         <module>windy-common</module>
+        <module>windy-api</module>
+        <module>windy-serialize</module>
     </modules>
 
 </project>

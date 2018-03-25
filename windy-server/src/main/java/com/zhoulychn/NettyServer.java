@@ -1,4 +1,4 @@
-package com.zhoulychn.Client;
+package com.zhoulychn;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 /**
  * Created by Lewis on 2018/3/25
  */
-public class NettyServer implements Client {
+public class NettyServer {
 
     public static void main(String[] args) throws InterruptedException {
         int port = 8880;
@@ -33,17 +33,14 @@ public class NettyServer implements Client {
                     ch.pipeline().addLast(new EchoServerHandler());
                 }
             });
-            ChannelFuture sync = b.bind(port).sync();
-            sync.channel().closeFuture().sync();
+            ChannelFuture f = b.bind(port).sync();
+            f.channel().closeFuture().sync();
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
-            bossGroup.shutdownGracefully().sync();
-            workerGroup.shutdownGracefully().sync();
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
-    }
-
-    @Override
-    public Object call(Class<?> clazz, Method method, Object[] args) {
-        return null;
     }
 
     class EchoServerHandler extends SimpleChannelInboundHandler {
@@ -51,11 +48,11 @@ public class NettyServer implements Client {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
             ByteBuf buf = (ByteBuf) msg;
-            byte[] bytes = new byte[buf.readableBytes()];
-            buf.readBytes(bytes);
+            byte[] req = new byte[buf.readableBytes()];
+            buf.readBytes(req);
 
-            String body = new String(bytes, "UTF-8");
-            System.out.println("receive data from client" + body);
+            String body = new String(req, "UTF-8");
+            System.out.println("receive data from client:" + body);
 
             ByteBuf resp = Unpooled.copiedBuffer(body.getBytes());
             ctx.write(resp);

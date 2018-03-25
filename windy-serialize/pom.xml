@@ -10,8 +10,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>windy-serialization</artifactId>
+    <artifactId>windy-serialize</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    
 </project>

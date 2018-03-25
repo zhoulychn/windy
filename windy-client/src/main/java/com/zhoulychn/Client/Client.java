@@ -7,5 +7,5 @@ import java.lang.reflect.Method;
  */
 public interface Client {
 
-    Object call(final Class<?> clazz, Method method, Object[] args);
+   Object call(Object proxy, Method method, Object[] args);
 }

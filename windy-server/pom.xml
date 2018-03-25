@@ -13,5 +13,25 @@
     <artifactId>windy-server</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    
+    <dependencies>
+
+        <dependency>
+            <groupId>com.zhoulychn</groupId>
+            <artifactId>windy-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zhoulychn</groupId>
+            <artifactId>windy-transport</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zhoulychn</groupId>
+            <artifactId>windy-registry</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+
 </project>

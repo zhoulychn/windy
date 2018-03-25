@@ -7,6 +7,6 @@ import java.util.List;
  */
 public interface Registrable {
 
-    void providerRegister(List<ProviderService> list);
+    void providerRegister(List<Class> list);
 
 }

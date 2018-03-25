@@ -2,8 +2,8 @@ package com.zhoulychn;
 
 import com.zhoulychn.serializer.JavaSerializer;
 import com.zhoulychn.serializer.KryoSerializer;
-import com.zhoulychn.serializer.SerializerType;
 import com.zhoulychn.serializer.Serializer;
+import com.zhoulychn.serializer.SerializerType;
 
 import java.util.HashMap;
 import java.util.Map;
