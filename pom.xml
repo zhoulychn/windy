@@ -126,7 +126,6 @@
         <module>windy-server</module>
         <module>windy-registry</module>
         <module>windy-transport</module>
-        <module>windy-codec</module>
         <module>windy-serialization</module>
         <module>windy-common</module>
     </modules>
