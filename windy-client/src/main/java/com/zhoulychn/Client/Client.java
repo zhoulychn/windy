@@ -7,5 +7,7 @@ import java.lang.reflect.Method;
  */
 public interface Client {
 
-   Object call(Object proxy, Method method, Object[] args);
+    Object call(Object proxy, Method method, Object[] args);
+
+    void connect(int port, String host) throws InterruptedException;
 }

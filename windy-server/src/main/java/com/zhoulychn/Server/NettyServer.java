@@ -1,5 +1,10 @@
-package com.zhoulychn;
+package com.zhoulychn.Server;
 
+import com.zhoulychn.NettyDecoderHandler;
+import com.zhoulychn.NettyEncoderHandler;
+import com.zhoulychn.SerialFactory;
+import com.zhoulychn.WindyRequest;
+import com.zhoulychn.serializer.SerializerType;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -8,19 +13,16 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-import java.lang.reflect.Method;
-
 /**
  * Created by Lewis on 2018/3/25
  */
 public class NettyServer {
 
-    public static void main(String[] args) throws InterruptedException {
-        int port = 8880;
-        new NettyServer().bind(port);
-    }
 
-    public void bind(int port) throws InterruptedException {
+    private static final int port = 8880;
+
+
+    public static void bind() throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -30,7 +32,9 @@ public class NettyServer {
                     .option(ChannelOption.SO_BACKLOG, 1024).childHandler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
                 protected void initChannel(NioSocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new EchoServerHandler());
+                    ch.pipeline().addLast(new NettyServerInvoker())
+                            .addLast(new NettyEncoderHandler(SerialFactory.get(SerializerType.kryo)))
+                            .addLast(new NettyDecoderHandler(SerialFactory.get(SerializerType.kryo), WindyRequest.class));
                 }
             });
             ChannelFuture f = b.bind(port).sync();
@@ -40,32 +44,6 @@ public class NettyServer {
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
-        }
-    }
-
-    class EchoServerHandler extends SimpleChannelInboundHandler {
-
-        @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-            ByteBuf buf = (ByteBuf) msg;
-            byte[] req = new byte[buf.readableBytes()];
-            buf.readBytes(req);
-
-            String body = new String(req, "UTF-8");
-            System.out.println("receive data from client:" + body);
-
-            ByteBuf resp = Unpooled.copiedBuffer(body.getBytes());
-            ctx.write(resp);
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            ctx.close();
-        }
-
-        @Override
-        public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-            ctx.flush();
         }
     }
 

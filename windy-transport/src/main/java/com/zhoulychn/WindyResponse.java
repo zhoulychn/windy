@@ -15,17 +15,6 @@ public class WindyResponse implements Serializable {
 
     private Exception exception;
 
-    public WindyResponse() {
-
-    }
-
-    public WindyResponse(String UUID, Object result, Long time, Exception exception) {
-        this.UUID = UUID;
-        this.result = result;
-        this.time = time;
-        this.exception = exception;
-    }
-
     public String getUUID() {
         return UUID;
     }

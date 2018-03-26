@@ -1,4 +1,4 @@
-import com.zhoulychn.SerialEngine;
+import com.zhoulychn.SerialFactory;
 import com.zhoulychn.serializer.SerializerType;
 import com.zhoulychn.serializer.Serializer;
 import org.junit.Test;
@@ -8,10 +8,10 @@ import java.io.IOException;
 /**
  * Created by Lewis on 2018/3/24
  */
-public class SerialEngineTest {
+public class SerialFactoryTest {
 
     public static void test(SerializerType type) {
-        Serializer serializer = SerialEngine.get(SerializerType.kryo);
+        Serializer serializer = SerialFactory.get(SerializerType.kryo);
 
         TestClass testClass = new TestClass();
         testClass.setName("lewis");

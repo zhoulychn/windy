@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by Lewis on 2018/3/24
  */
-public class SerialEngine {
+public class SerialFactory {
 
     private static final Map<SerializerType, Serializer> container = new HashMap<>();
 
@@ -22,7 +22,9 @@ public class SerialEngine {
     }
 
     public static Serializer get(SerializerType type) {
-        if (container.size() == 0) init();
-        return container.get(type);
+        if (SerializerType.kryo.equals(type))
+            return new KryoSerializer();
+        return new JavaSerializer();
     }
+
 }

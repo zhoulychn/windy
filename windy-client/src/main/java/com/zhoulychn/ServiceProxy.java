@@ -16,9 +16,9 @@ public class ServiceProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String name = proxy.getClass().getName();
+        Class<?> clazz = method.getDeclaringClass();
         Client client = ClientFactory.get(ClientType.Netty);
-        return client.call(proxy.getClass(), method, args);
+        return client.call(clazz, method, args);
     }
 
 }

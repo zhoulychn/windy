@@ -1,6 +1,8 @@
 package com.zhoulychn.Client;
 
-import com.zhoulychn.WindyRequest;
+import com.zhoulychn.*;
+import com.zhoulychn.Server.NettyServerInvoker;
+import com.zhoulychn.serializer.SerializerType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -16,32 +18,32 @@ import java.util.UUID;
  */
 public class NettyClient implements Client {
 
+    private static final String appName = "/lewis";
+
+    private static final int port = 8880;
+
+    private static final String host = "127.0.0.1";
+
+    private static Channel channel;
 
 
-    public static void main(String[] args) throws InterruptedException {
-        int port = 8880;
-        new NettyClient().connect(port, "127.0.0.1");
-    }
-
-
-    private void connect(int port, String host) throws InterruptedException {
+    @Override
+    public void connect(int port, String host) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
             b.group(group).channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY,true)
+                    .option(ChannelOption.TCP_NODELAY, true)
                     .handler(new ChannelInitializer<NioSocketChannel>() {
                         @Override
-                        protected void initChannel(NioSocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new EchoClientHandler());
+                        protected void initChannel(NioSocketChannel ch) {
+                            ch.pipeline().addLast(new NettyClientInvoker()).
+                                    addLast(new NettyEncoderHandler(SerialFactory.get(SerializerType.kryo)))
+                                    .addLast(new NettyDecoderHandler(SerialFactory.get(SerializerType.kryo), WindyResponse.class));
                         }
                     });
-            ChannelFuture f = b.connect(host,port).sync();
-            byte[] req = "hello,netty".getBytes();
-            ByteBuf messageBuffer = Unpooled.buffer(req.length);
-            messageBuffer.writeBytes(req);
-            ChannelFuture channelFuture = f.channel().writeAndFlush(messageBuffer);
-            channelFuture.channel().closeFuture().sync();
+            ChannelFuture channelFuture = b.connect(host, port).sync();
+            channel = channelFuture.channel();
         } finally {
             group.shutdownGracefully();
         }
@@ -50,34 +52,21 @@ public class NettyClient implements Client {
 
     @Override
     public Object call(Object proxy, Method method, Object[] args) {
+        try {
+            connect(port,host);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        WindyRequest request = new WindyRequest();
+        request.setAppName(appName);
+        request.setClazz(proxy.getClass().getName());
+        request.setMaxTime(30000L);
+        request.setMethod(method.toString());
+        request.setUUID(UUID.randomUUID().toString());
+        request.setArgs(args);
 
-        WindyRequest request = new WindyRequest(UUID.randomUUID().toString(),proxy.getClass(),method,args,1000L,"lewis");
-
-
-        return null;
+        NettyClientInvoker.send(request);
+        return ResponseHolder.get(request.getUUID());
     }
 
-
-    class EchoClientHandler extends SimpleChannelInboundHandler {
-
-        @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-            ByteBuf buf = (ByteBuf) msg;
-            byte[] req = new byte[buf.readableBytes()];
-            buf.readBytes(req);
-
-            String body = new String(req, "UTF-8");
-            System.out.println("receive data from server :" + body);
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            ctx.close();
-        }
-
-        @Override
-        public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-            ctx.flush();
-        }
-    }
 }

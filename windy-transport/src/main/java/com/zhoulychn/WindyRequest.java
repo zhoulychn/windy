@@ -9,17 +9,17 @@ import java.util.Arrays;
  */
 public class WindyRequest implements Serializable {
 
+    private String appName;
+
     private String UUID;
 
-    private Class clazz;
+    private String clazz;
 
-    private Method method;
+    private String method;
 
     private Object[] args;
 
     private long maxTime;
-
-    private String appName;
 
 
     public String getUUID() {
@@ -30,19 +30,19 @@ public class WindyRequest implements Serializable {
         this.UUID = UUID;
     }
 
-    public Class getClazz() {
+    public String getClazz() {
         return clazz;
     }
 
-    public void setClazz(Class clazz) {
+    public void setClazz(String clazz) {
         this.clazz = clazz;
     }
 
-    public Method getMethod() {
+    public String getMethod() {
         return method;
     }
 
-    public void setMethod(Method method) {
+    public void setMethod(String method) {
         this.method = method;
     }
 
@@ -70,16 +70,15 @@ public class WindyRequest implements Serializable {
         this.appName = appName;
     }
 
-    public WindyRequest() {
-
-    }
-
-    public WindyRequest(String UUID, Class clazz, Method method, Object[] args, long maxTime, String appName) {
-        this.UUID = UUID;
-        this.clazz = clazz;
-        this.method = method;
-        this.args = args;
-        this.maxTime = maxTime;
-        this.appName = appName;
+    @Override
+    public String toString() {
+        return "WindyRequest{" +
+                "UUID='" + UUID + '\'' +
+                ", clazz='" + clazz + '\'' +
+                ", method='" + method + '\'' +
+                ", args=" + Arrays.toString(args) +
+                ", maxTime=" + maxTime +
+                ", appName='" + appName + '\'' +
+                '}';
     }
 }
