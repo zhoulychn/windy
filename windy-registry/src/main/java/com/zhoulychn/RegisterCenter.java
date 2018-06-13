@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 /**
  * Created by Lewis on 2018/3/24
  */
+
 public class RegisterCenter {
 
     private static Logger logger = Logger.getLogger(RegisterCenter.class);
@@ -38,10 +39,6 @@ public class RegisterCenter {
     private static ZkClient client;
 
     private static RegisterCenter singleton = new RegisterCenter();
-
-    private RegisterCenter() {
-
-    }
 
     public static RegisterCenter getSingleton() {
         return singleton;
