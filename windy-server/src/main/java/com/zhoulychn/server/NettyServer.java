@@ -1,4 +1,4 @@
-package com.zhoulychn.Server;
+package com.zhoulychn.server;
 
 import com.zhoulychn.NettyDecoderHandler;
 import com.zhoulychn.NettyEncoderHandler;
@@ -6,8 +6,6 @@ import com.zhoulychn.SerialFactory;
 import com.zhoulychn.WindyRequest;
 import com.zhoulychn.serializer.SerializerType;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -18,9 +16,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  */
 public class NettyServer {
 
-
     private static final int port = 8880;
-
 
     public static void bind() throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -32,7 +28,8 @@ public class NettyServer {
                     .option(ChannelOption.SO_BACKLOG, 1024).childHandler(new ChannelInitializer<NioSocketChannel>() {
                 @Override
                 protected void initChannel(NioSocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new NettyServerInvoker())
+                    ch.pipeline()
+                            .addLast(new NettyServerInvoker())
                             .addLast(new NettyEncoderHandler(SerialFactory.get(SerializerType.kryo)))
                             .addLast(new NettyDecoderHandler(SerialFactory.get(SerializerType.kryo), WindyRequest.class));
                 }

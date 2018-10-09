@@ -1,6 +1,6 @@
 package com.zhoulychn;
 
-import com.zhoulychn.Server.NettyServer;
+import com.zhoulychn.server.NettyServer;
 import com.zhoulychn.impl.BookServiceImpl;
 import com.zhoulychn.impl.UserServiceImpl;
 
