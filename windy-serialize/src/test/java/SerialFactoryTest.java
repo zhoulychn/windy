@@ -1,6 +1,6 @@
 import com.zhoulychn.SerialFactory;
 import com.zhoulychn.serializer.SerializerType;
-import com.zhoulychn.serializer.Serializer;
+import com.zhoulychn.Serializer;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -1,22 +1,15 @@
 package com.zhoulychn;
 
 import com.google.common.collect.Maps;
-import com.zhoulychn.serializer.ZkSerializerAdapter;
+import com.zhoulychn.impl.BookServiceImpl;
+import com.zhoulychn.impl.UserServiceImpl;
 import org.I0Itec.zkclient.ZkClient;
-import org.apache.log4j.Logger;
-import org.apache.zookeeper.CreateMode;
+import org.I0Itec.zkclient.serialize.SerializableSerializer;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * Created by Lewis on 2018/3/24
@@ -24,87 +17,71 @@ import java.util.concurrent.Future;
 
 public class RegisterCenter {
 
-    private static Logger logger = Logger.getLogger(RegisterCenter.class);
-
-    private static final int ZK_SESSION_TIMEOUT = 30000;
-
-    private static final int ZK_CONNECTION_TIME_OUT = 1000;
-
-    private static final String ZK_APP_PATH = "/lewis";
-
-    private static final String ZK_HOST = "127.0.0.1:2181";
-
     private static final Map<String, ServiceData> services = Maps.newConcurrentMap();
 
     private static ZkClient client;
 
-    private static RegisterCenter singleton = new RegisterCenter();
-
-    public static RegisterCenter getSingleton() {
-        return singleton;
-    }
-
-
-    //添加服务结点
-    public void registerProvider(List<Class> list) {
-        for (Class each : list) {
-            for (Class face : each.getInterfaces()) {
-                client.createEphemeral(ZK_APP_PATH + "/" + face.getName(),each);
-            }
-        }
-    }
-
-    //获取服务
-    public ServiceData getProvider(String appName, String serviceName) {
-        if (!ZK_APP_PATH.equals(appName)) return null;
-        ServiceData service = services.get(serviceName);
-        if (service == null) {
-            Object obj = client.readData(ZK_APP_PATH + "/" + serviceName, true);
-            if (obj != null && obj instanceof Class) {
-                try {
-                    addCache((Class) obj);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return service;
-    }
-
     //初始化
-    public void RegisterCenterInit() {
+    public static void RegisterCenterInit() {
 
-        client = new ZkClient(ZK_HOST, ZK_SESSION_TIMEOUT, ZK_CONNECTION_TIME_OUT, new ZkSerializerAdapter());
+        client = new ZkClient(Constants.ZK_HOST, Constants.ZK_SESSION_TIMEOUT, Constants.ZK_CONNECTION_TIME_OUT, new SerializableSerializer());
 
         //初始化路径
-        if (!client.exists(ZK_APP_PATH)) {
-            client.createPersistent(ZK_APP_PATH);
+        if (!client.exists(Constants.ZK_APP_PATH)) {
+            client.createPersistent(Constants.ZK_APP_PATH);
         }
 
+
         //监听结点改变，将新增的服务加入缓存
-        client.subscribeChildChanges(ZK_APP_PATH, (parentPath, currentChilds) -> {
+        client.subscribeChildChanges(Constants.ZK_APP_PATH, (parentPath, currentChilds) -> {
             if (currentChilds == null || currentChilds.size() == 0) return;
-            for (String each : currentChilds) {
-                Object obj = client.readData(parentPath + "/" + each, true);
-                if (obj != null && obj instanceof Class) {
-                    addCache((Class) obj);
-                }
+            for (String child : currentChilds) {
+                Class obj = client.readData(parentPath + "/" + child, true);
+                addCache(obj);
             }
         });
+        List<Class> service = new ArrayList<>();
+        service.add(UserServiceImpl.class);
+        service.add(BookServiceImpl.class);
+        registerProvider(service);
+    }
+
+    //添加服务结点
+    private static void registerProvider(List<Class> list) {
+        for (Class item : list) {
+            for (Class face : item.getInterfaces()) {
+                client.createEphemeral(Constants.ZK_APP_PATH + "/" + face.getName(), item);
+            }
+        }
     }
 
     //添加缓存
-    private void addCache(Class clazz) throws Exception {
+    private static void addCache(Class clazz) throws Exception {
         Class[] interfaces = clazz.getInterfaces();
         if (interfaces.length == 0) return;
         ServiceData service = new ServiceData();
         service.setClazz(clazz);
         service.setObj(clazz.newInstance());
         for (Method method : clazz.getDeclaredMethods()) {
-            service.getMap().put(method.toString(), method);
+            service.getMap().put(method.getName(), method);
         }
         for (Class item : interfaces) {
             services.put(item.getName(), service);
         }
+    }
+
+    //获取服务
+    public static ServiceData getProvider(String appName, String serviceName) {
+        if (!Constants.ZK_APP_PATH.equals("/" + appName)) return null;
+        ServiceData service = services.get(serviceName);
+        if (service == null) {
+            Class clazz = client.readData(Constants.ZK_APP_PATH + "/" + serviceName, true);
+            try {
+                addCache(clazz);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return services.get(serviceName);
     }
 }

@@ -1,6 +1,6 @@
 package com.zhoulychn;
 
-import com.zhoulychn.serializer.Serializer;
+import com.zhoulychn.serializer.KryoSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -13,12 +13,11 @@ import java.util.List;
 public class NettyDecoderHandler extends ByteToMessageDecoder {
 
     //序列化器
-    private Serializer serializer;
+    private KryoSerializer serializer = new KryoSerializer();
 
     private Class<?> clazz;
 
-    public NettyDecoderHandler(Serializer serializer, Class<?> clazz) {
-        this.serializer = serializer;
+    public NettyDecoderHandler(Class<?> clazz) {
         this.clazz = clazz;
     }
 
@@ -44,7 +43,9 @@ public class NettyDecoderHandler extends ByteToMessageDecoder {
 
         //将字节数组反序列化为java对象(SerializerEngine参考序列化与反序列化章节)
 
-        Object result = serializer.deserialize(data, clazz);
+        Object result = serializer.deserialize(data,clazz);
         out.add(result);
+
+        System.out.println("解码成功：" + result);
     }
 }

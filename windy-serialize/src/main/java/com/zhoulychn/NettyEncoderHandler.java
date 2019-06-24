@@ -1,7 +1,6 @@
 package com.zhoulychn;
 
-import com.zhoulychn.serializer.Serializer;
-import com.zhoulychn.serializer.SerializerType;
+import com.zhoulychn.serializer.KryoSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -12,11 +11,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class NettyEncoderHandler extends MessageToByteEncoder {
 
     //序列化类型
-    private Serializer serializer;
-
-    public NettyEncoderHandler(Serializer serializer) {
-        this.serializer = serializer;
-    }
+    private KryoSerializer serializer = new KryoSerializer();
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
@@ -30,6 +25,8 @@ public class NettyEncoderHandler extends MessageToByteEncoder {
         //写入序列化后得到的字节数组
 
         out.writeBytes(data);
+
+        System.out.println("编码成功：" + msg);
     }
 
 }

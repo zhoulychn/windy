@@ -1,6 +1,6 @@
 package com.zhoulychn;
 
-import java.lang.reflect.Proxy;
+import com.zhoulychn.proxy.RpcProxy;
 
 /**
  * Created by Lewis on 2018/3/25
@@ -8,13 +8,8 @@ import java.lang.reflect.Proxy;
 public class Application {
 
     public static void main(String[] args) {
-
-        Class[] list = new Class[]{UserService.class};
-
-        UserService result = (UserService) Proxy.newProxyInstance(Application.class.getClassLoader(), list, new ServiceProxy());
-
-        String name = result.getName("hello,lewis");
-
-        System.out.println(name);
+        UserService service = RpcProxy.buildProxy(UserService.class);
+        String lewis = service.getName("lewis");
+        System.out.println(lewis);
     }
 }

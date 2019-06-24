@@ -1,6 +1,7 @@
 package com.zhoulychn.serializer;
 
 import com.zhoulychn.SerialFactory;
+import com.zhoulychn.Serializer;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 
@@ -9,9 +10,11 @@ import java.io.IOException;
 /**
  * Created by Lewis on 2018/3/25
  */
-public class ZkSerializerAdapter implements ZkSerializer {
+public class ZkSerializerAdapter<T> implements ZkSerializer {
 
     private final Serializer serializer = SerialFactory.get(SerializerType.kryo);
+
+
 
     @Override
     public byte[] serialize(Object data) throws ZkMarshallingError {

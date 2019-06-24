@@ -1,5 +1,7 @@
 package com.zhoulychn.serializer;
 
+import com.zhoulychn.Serializer;
+
 import java.io.*;
 
 /**

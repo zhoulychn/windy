@@ -1,4 +1,4 @@
-package com.zhoulychn.serializer;
+package com.zhoulychn;
 
 import java.io.IOException;
 

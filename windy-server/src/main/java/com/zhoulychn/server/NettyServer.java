@@ -1,47 +1,33 @@
 package com.zhoulychn.server;
 
-import com.zhoulychn.NettyDecoderHandler;
-import com.zhoulychn.NettyEncoderHandler;
-import com.zhoulychn.SerialFactory;
-import com.zhoulychn.WindyRequest;
-import com.zhoulychn.serializer.SerializerType;
+import com.zhoulychn.Constants;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 /**
  * Created by Lewis on 2018/3/25
  */
 public class NettyServer {
 
-    private static final int port = 8880;
+    public void start() throws Exception {
 
-    public static void bind() throws InterruptedException {
+        //创建两个线程组，boss 接受连接， worker处理连接
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, 1024).childHandler(new ChannelInitializer<NioSocketChannel>() {
-                @Override
-                protected void initChannel(NioSocketChannel ch) throws Exception {
-                    ch.pipeline()
-                            .addLast(new NettyServerInvoker())
-                            .addLast(new NettyEncoderHandler(SerialFactory.get(SerializerType.kryo)))
-                            .addLast(new NettyDecoderHandler(SerialFactory.get(SerializerType.kryo), WindyRequest.class));
-                }
-            });
-            ChannelFuture f = b.bind(port).sync();
-            f.channel().closeFuture().sync();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-        }
-    }
+        ServerBootstrap serverBoot = new ServerBootstrap()
+                .group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)  //nio的channel
+                .option(ChannelOption.SO_BACKLOG, 1024)
+                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .handler(new LoggingHandler(LogLevel.ERROR))
+                .childHandler(new ServerChannelInitializer());
 
+        serverBoot.bind(Constants.NETTY_PORT).sync();
+    }
 }

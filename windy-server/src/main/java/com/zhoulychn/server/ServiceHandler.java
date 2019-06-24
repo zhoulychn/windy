@@ -1,10 +1,11 @@
-package com.zhoulychn;
+package com.zhoulychn.server;
 
-import org.springframework.stereotype.Component;
+import com.zhoulychn.RegisterCenter;
+import com.zhoulychn.ServiceData;
+import com.zhoulychn.WindyRequest;
+import com.zhoulychn.WindyResponse;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * Created by Lewis on 2018/3/24
@@ -13,11 +14,9 @@ import java.util.List;
 
 public class ServiceHandler {
 
-    private static RegisterCenter center = RegisterCenter.getSingleton();
-
     public static WindyResponse invoke(WindyRequest request) {
         long start = System.currentTimeMillis();
-        ServiceData service = center.getProvider(request.getAppName(), request.getClazz());
+        ServiceData service = RegisterCenter.getProvider(request.getAppName(), request.getClazz());
         Method method = service.getMap().get(request.getMethod());
         WindyResponse response = new WindyResponse();
         response.setUUID(request.getUUID());
@@ -30,10 +29,5 @@ public class ServiceHandler {
         long end = System.currentTimeMillis();
         response.setTime(end - start);
         return response;
-    }
-
-    public static void ServiceRegister(List<Class> list) {
-        center.RegisterCenterInit();
-        center.registerProvider(list);
     }
 }
