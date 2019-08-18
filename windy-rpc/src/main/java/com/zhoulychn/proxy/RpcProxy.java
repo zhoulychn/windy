@@ -33,7 +33,6 @@ public class RpcProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Class<?> clazz = method.getDeclaringClass();
-
         WindyRequest request = new WindyRequest();
         request.setAppName(Constants.APP_NAME);
         request.setUUID(UUID.randomUUID().toString());

@@ -44,12 +44,15 @@ public class NettyClient {
 
     public static WindyResponse invoke(WindyRequest request) throws Exception {
 
+        // 注册一个channel
         Channel channel = registerChannel();
 
+        // 检测channel是否可用
         if (!channel.isOpen() || !channel.isActive() || !channel.isWritable()) {
             throw new Exception("channel create failed.");
         }
 
+        // 开启线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(10);
 
         Future<WindyResponse> future = threadPool.submit(() -> {
