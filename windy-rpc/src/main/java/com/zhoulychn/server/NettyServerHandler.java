@@ -15,7 +15,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<WindyRequest
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, WindyRequest request) throws Exception {
         WindyResponse response = ServiceHandler.invoke(request);
-        System.out.println("receive data from client:" + request);
+        System.out.println("请求处理完成，结果编码中。。。" + response);
+        System.out.println();
         ctx.write(response);
     }
 

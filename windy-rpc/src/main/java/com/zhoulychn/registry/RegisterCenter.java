@@ -51,7 +51,8 @@ public class RegisterCenter {
     private static void registerProvider(List<Class> list) {
         for (Class item : list) {
             for (Class face : item.getInterfaces()) {
-                client.createEphemeral(Constants.ZK_APP_PATH + "/" + face.getName(), item);
+                String path = Constants.ZK_APP_PATH + "/" + face.getName();
+                if (!client.exists(path)) client.createPersistent(path, item);
             }
         }
     }

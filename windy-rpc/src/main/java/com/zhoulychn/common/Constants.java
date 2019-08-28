@@ -6,7 +6,7 @@ public class Constants {
 
     public static final int NETTY_PORT = 8001;
 
-    public static final long NETTY_TIMEOUT = 600;
+    public static final long NETTY_TIMEOUT = 6000;
 
     public static final String APP_NAME = "windy";
 
@@ -16,5 +16,5 @@ public class Constants {
 
     public static final String ZK_APP_PATH = "/windy";
 
-    public static final String ZK_HOST = "127.0.0.1:3001";
+    public static final String ZK_HOST = "127.0.0.1:2181";
 }

@@ -13,11 +13,15 @@ import java.util.concurrent.*;
 
 public class NettyClient {
 
-    static final Map<String, BlockingQueue<WindyResponse>> responseMap = new ConcurrentHashMap<>();
+    static Map<String, BlockingQueue<WindyResponse>> responseMap = new ConcurrentHashMap<>();
+
+
+    private static ExecutorService threadPool = Executors.newCachedThreadPool();
 
     /**
      * 创建一个netty通道，用于数据交互
-     * @return  通道
+     *
+     * @return 通道
      * @throws Exception 异常
      */
     private static Channel registerChannel() throws Exception {
@@ -53,17 +57,16 @@ public class NettyClient {
         }
 
         // 开启线程池
-        ExecutorService threadPool = Executors.newFixedThreadPool(10);
-
         Future<WindyResponse> future = threadPool.submit(() -> {
             NettyClient.responseMap.put(request.getUUID(), new ArrayBlockingQueue<>(1));
             ChannelFuture channelFuture = channel.writeAndFlush(request);
             channelFuture.syncUninterruptibly();
-            return NettyClient.responseMap.get(request.getUUID()).poll(Constants.NETTY_TIMEOUT, TimeUnit.MILLISECONDS);
+            try {
+                return NettyClient.responseMap.get(request.getUUID()).poll(Constants.NETTY_TIMEOUT, TimeUnit.MILLISECONDS);
+            } finally {
+                channel.close();
+            }
         });
-
-        WindyResponse response = future.get();
-        threadPool.shutdown();
-        return response;
+        return future.get();
     }
 }

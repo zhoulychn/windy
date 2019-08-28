@@ -26,7 +26,8 @@ public class NettyEncoderHandler extends MessageToByteEncoder {
 
         out.writeBytes(data);
 
-        System.out.println("编码成功：" + msg);
+        System.out.println("编码成功，返回结果");
+        System.out.println();
     }
 
 }

@@ -46,6 +46,7 @@ public class NettyDecoderHandler extends ByteToMessageDecoder {
         Object result = serializer.deserialize(data,clazz);
         out.add(result);
 
-        System.out.println("解码成功：" + result);
+        System.out.println("收到请求已解析：" + result);
+        System.out.println();
     }
 }
